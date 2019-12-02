@@ -4,13 +4,14 @@ import store from "../store.js";
 // @ts-ignore
 let _sandBox = axios.create({
   //TODO Change YOURNAME to your actual name
-  baseURL: "//bcw-sandbox.herokuapp.com/api/YOURNAME/songs"
+  baseURL: "//bcw-sandbox.herokuapp.com/api/Gabe/songs"
 });
 
 class SongsService {
   constructor() {
     // NOTE this will get your songs on page load
     this.getMySongs();
+    console.log("hello from  SongService");
   }
 
   /**
@@ -38,8 +39,9 @@ class SongsService {
     _sandBox
       .get()
       .then(res => {
+        let results = res.data.data.map(rawData => new Song(rawData));
+        store.commit("playlist", results);
         //TODO What are you going to do with this result
-        let results = res.results.map(rawData => new Song(rawData));
       })
       .catch(error => {
         throw new Error(error);
@@ -52,9 +54,19 @@ class SongsService {
    * @param {string} id
    */
   addSong(id) {
-    //TODO you only have an id, you will need to find it in the store before you can post it
-    //TODO After posting it what should you do?
+    console.log("add button service");
+    let chosenSong = store.State.songs.find(song => song._id == id);
+    _sandBox
+      .post("", chosenSong)
+      .then(res => {
+        this.getMySongs();
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
+  //TODO you only have an id, you will need to find it in the store before you can post it
+  //TODO After posting it what should you do?
 
   /**
    * Sends a delete request to the sandbox to remove a song from the playlist
@@ -62,6 +74,17 @@ class SongsService {
    * @param {string} id
    */
   removeSong(id) {
+    debugger;
+    // let deletedSong = store.State.playlist.filter(song => song._id != id);
+    _sandBox
+      .delete(`${id}`)
+      .then(res => {
+        this.getMySongs();
+      })
+      .catch(err => {
+        console.log(err);
+      });
+
     //TODO Send the id to be deleted from the server then update the store
   }
 }
